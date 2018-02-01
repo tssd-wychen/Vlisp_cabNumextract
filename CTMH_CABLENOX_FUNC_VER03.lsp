@@ -1,4 +1,4 @@
-(defun EXT_CbTp_INFO(tss tmklist /)
+(defun EXT_CbTp_INFO(tss tmklist / )
 ;
   ;函数的临时量不能和主函数中正在使用的变量相同，输入输出量反倒无所谓
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -25,7 +25,7 @@
 	(setq distlst (mapcar '(lambda(ptx)(distance ps2d ptx)) pt2dlist_n))
 	(setq mindist (apply 'min distlst))
 	(setq i_mind (1- (length (member mindist (reverse distlst)))))
-	(setq ptout (list mindist (nth i_mind ptlist)))
+	(setq ptout (list mindist (trans (nth i_mind ptlist_n) norm 1)))
       )
       (setq ptout nil)
     )
@@ -57,6 +57,7 @@
     
     (setq pclpty (entget pclen))
     (setq pclpts (find_multi_pty pclpty 10));power cable line point start
+
     (setq pclpts (mapcar 'cdr pclpts))
     (cond
       ((= (length pclpts) 1);情况：line
@@ -99,7 +100,8 @@
   )
   (setq index_pcl (1- (* 2 (length (member 1 index_pcl)))));power cable line index
   (setq index_pcnen (car (nth index_tml tmklist)));power cable no en
-  (setq pcnen (ssname tss index_pcnen))
+  (setq pcnen
+	 (ssname tss index_pcnen))
   
   (setq pt1 (nth (1- index_pcl) pclptlst)
         pt2 (nth index_pcl pclptlst)
@@ -115,13 +117,19 @@
   (setq pt_list (list pt1 pt2 pt3 pt4))
   (setq pct_filter '((0 . "text")(1 . "*@*-#*")))
   (setq pctss (ssget "WP" pt_list pct_filter))
-  (if (= (sslength pctss) 1)
-    (setq pcten (ssname pctss 0))
+  (if pctss
+    (if (= (sslength pctss) 1)
+      (setq pcten (ssname pctss 0))
+      (setq pcten "N/A")
+    )
     (setq pcten nil)
   )
   (if pcten
-    (setq outlist (list (cdr (assoc 1 (entget pcnen))) (cdr (assoc 1 (entget pcten)))))
-    (setq outlist (list (cdr (assoc 1 (entget pcnen))) "nil"))
+    (if (= pcten "N/A")
+      (setq outlist (list (cdr (assoc 1 (entget pcnen))) pcten))
+      (setq outlist (list (cdr (assoc 1 (entget pcnen))) (cdr (assoc 1 (entget pcten)))))
+    )
+    (setq outlist (list (cdr (assoc 1 (entget pcnen))) "DE-1"))
   )
   
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

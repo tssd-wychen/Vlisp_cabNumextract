@@ -96,7 +96,7 @@
       )
     )
   )
-  (defun mod_in_dcl()
+  (defun >MOD_IN_DCL()
     (if (= op_Flag 1)
       (progn
         (mode_tile "dia001" 1)
@@ -197,7 +197,7 @@
   (set_tile "dia003" *area_Group)
   (set_tile "dia004" *area_Name)
   (set_tile "dia001" *cirMk)
-  (action_tile "dia100" "(>GET_FROM_DCL)(mod_in_dcl)")
+  (action_tile "dia100" "(>GET_FROM_DCL)(>MOD_IN_DCL)")
   (action_tile "accept" "(>GET_FROM_DCL)(done_dialog 1)")
   (action_tile "cancel" "(done_dialog 0)")
   (setq dd (start_dialog))
@@ -226,10 +226,13 @@
     (progn
       (setq txtList (append txtList (list " " area_Group area_Name *orDer " ")));写入txtList 后缀space，G，N，O，space
       (setq pcnt_tlst (EXT_CbTp_INFO txtSs loMklst));走重写流程：EXTRACT_PCable_Type
+      (setq pcnt_tlst (TLST_REFINE pcnt_tlst cirMk))
+      (setq txtList (vl-remove-if '(lambda(strx)(= strx (car pcnt_tlst))) txtList))
+      (setq txtList (cons (car pcnt_tlst) txtList))
       (setq txtList (append pcnt_tlst txtList));写入txtList 前缀W/A,PC,PCT
-      (setq txtList (cons op_Flag txtList))
+      (setq txtList (cons (rtos op_Flag) txtList))
     )
-    (setq txtList (cons op_Flag txtList));写入txtList 前缀W/A
+    (setq txtList (cons (rtos op_Flag) txtList));写入txtList 前缀W/A
   )
   (vl-propagate 'txtList)
   
@@ -366,21 +369,21 @@
       )
       (setq lo_str_list lo_str_list)
     )
-  (defun CNseq (cntxt / asclst)
-      (setq asclst (vl-string->list cntxt))
-      (setq asclast (car (reverse asclst)))
-    )
+  ;(defun CNseq (cntxt / asclst)
+   ;   (setq asclst (vl-string->list cntxt))
+    ;  (setq asclast (car (reverse asclst)))
+    ;)
   
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
     (setq lo_str_list (mapcar 'rem_sufprefix lo_str_list))
     (setq lo_str_list (merge_CM_if_not cirMk lo_str_list))
     (setq lo_str_list (disperselo_in_lst lo_str_list))
-    (setq asclastlst (mapcar 'CNseq lo_str_list))
-    (setq seq (vl-sort-i asclastlst '<))
-    (setq tlst_tmp nil)
-    (foreach ix seq
-      (setq tlst_tmp (append tlst_tmp (list (nth ix lo_str_list))))
-    )
-    (setq tlst_out tlst_tmp)
+    ;(setq asclastlst (mapcar 'CNseq lo_str_list))
+    ;(setq seq (vl-sort-i asclastlst '<))
+    ;(setq tlst_tmp nil)
+    ;(foreach ix seq
+    ;  (setq tlst_tmp (append tlst_tmp (list (nth ix lo_str_list))))
+    ;)
+    ;(setq tlst_out tlst_tmp)
 
   )

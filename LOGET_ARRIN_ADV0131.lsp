@@ -1,25 +1,25 @@
 (defun c:writbk()
   ;(vl-load-com)
   (setvar "cmdecho" 0)
-  (setq info_list (list (cadr txtList) (member " " txtList)))
-  (setq )
-  (setq flag_Ar (car info_list))
-  ()
+  
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  (while (setq eqp_Def_list (read-line temp_File))
-    (setq eqp_Def_list (SLST_CSV2LSP eqp_Def_list))
+  (while txtList
+    ;(setq eqp_Def_list (SLST_CSV2LSP eqp_Def_list))
     (if	(setq equip_En (SEL_BK_ISEQP))
       (progn
-	(setq flag_Ar (car eqp_Def_list))
-	(setq eqp_Def_list (cdr eqp_Def_list))
+	(setq flag_Ar (car txtList))
 	(cond
-	  ((= flag_Ar "1")
-       	   (MAPCAR 'ENTMOD (CLR_EQP_DEF equip_En));执行图元属性列表修改
-	   (MOD_EQP_DEF equip_En eqp_Def_list flag_Ar)
-	  )
 	  ((= flag_Ar "0")
-	   (MOD_EQP_DEF equip_En eqp_Def_list flag_Ar)
+	   (setq info_list (cons (cadr txtList) (member " " txtList)))
+	   (setq info_circno (reverse (cdr (member " " (cdr (reverse (cdddr txtList)))))))
+	   (setq info_list (append info_list info_circno))
+       	   (MAPCAR 'ENTMOD (CLR_EQP_DEF equip_En));执行图元属性列表修改
+	   (MOD_EQP_DEF equip_En info_list flag_Ar)
 	  )
+	  ((= flag_Ar "1")
+	   (MOD_EQP_DEF equip_En info_list flag_Ar)
+	  )
+	  (t (exit))
 	)
 	;(setq excel_Col_i (1+ excel_Col_i))
       )
@@ -28,49 +28,18 @@
 	;()
       );未选择equipment block，询问退出否
     )
+    (setq writed_ad_no (rtos writed_ad_no))
+    (setq txtList nil)
   )
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  (close temp_File)
-  ;(VL-FILE-DELETE tempf_Path_s)
-  ;();提示存储库中info导入完成
-  (setq writed_ad_no (rtos writed_ad_no))
-  (princ (strcat "\n" writed_ad_no " attdefs have changed\n"))
+  (if writed_ad_no
+    (princ (strcat "\n" writed_ad_no " attdefs have changed\n"))
+    (princ "go to wiring diagram to get necessary information")
+  )
+  (setq writed_ad_no nil)
+  (setq txtList nil)
 )
 
-(defun TEMPF_RINIT( / )
-		  ;tempf_Path_s tempf_Path simf_exist)
-  (setq tempf_Path (vl-filename-mktemp "linno.csv"))
-  (princ (strcat "\n temp file path is" (setq tempf_Path (vl-filename-directory tempf_Path)) "\\linnoxxx.csv"))
-  ;存在linno003，linno004，不存在linno005，则以w方式打开linno004
-  (if (setq simf_exist
-	     (car
-	       (reverse
-		 (vl-directory-files tempf_Path "linno*.csv")
-		 )
-	       )
-	    )
-    
-    (progn
-      (setq tempf_Path_s (strcat tempf_Path "\\" simf_exist))
-      (setq temp_File (open tempf_Path_s "r"))
-    )
-    (progn
-      (alert "have not run 'COLLBK' command before,please run it to collect line no s 4 blk")
-      (exit)
-    )
-  )
-)
-
-(defun SLST_CSV2LSP(strlist / str_i strlist)
-  (setq llst nil)
-  (setq strlist (strcat strlist ","))
-  (while (setq i_c (vl-string-search "," strlist))
-    (setq str_i (substr strlist 1 i_c))
-    (setq llst (append llst (list str_i)))
-    (setq strlist (substr strlist (+ i_c 2)))
-  )
-  (setq llst llst)
-)
 
 (defun SEL_BK_ISEQP();让用户选择block，通过判断block是否有增强属性symb_no判断是否为需要修改的equip block
   ;返回该block的insert图元属性
@@ -146,7 +115,7 @@
 		   en_pty)
   (setq en (entnext en))
   (setq writed_ad_no 0)
-  (if (= flag_Ar "1");rewrite block
+  (if (= flag_Ar "0");rewrite block
     (foreach adstr dlist
     		;防止中途报错，将en从输入量（blk图元）转换到attrib图元，将attrib图元转换到下一个
         (if
@@ -160,7 +129,7 @@
         )
     )
   )
-  (if (= flag_Ar "0");append block
+  (if (= flag_Ar "1");append block
     (foreach adstr dlist
     		;防止中途报错，将en从输入量（blk图元）转换到attrib图元，将attrib图元转换到下一个
         (if
