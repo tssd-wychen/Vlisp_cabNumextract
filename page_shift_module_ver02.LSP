@@ -105,8 +105,7 @@
 	  (setq pgnotxt (atoi (vl-list->string pgnotxt)))
         )
 	(setq pgno -1)
-      )
-      (setq basenlst (subst (cons pgnotxt basen) basen basenlst))
+      )      (setq basenlst (subst (cons pgnotxt basen) basen basenlst))
     )
     basenlst
   )
